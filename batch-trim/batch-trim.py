@@ -23,15 +23,20 @@ def get_duration(start_time: str, end_time: str) -> str:
     durationStr = f"{(duration // 3600):02}:{((duration % 3600) // 60):02}:{(duration % 60):02}"
     return durationStr
 
-def get_output_filename(s: str, format: str) -> str:
-    s = os.path.basename(s)
+def get_output_filename(input_file: str, format: str, output_dir: str) -> str:
+    base = os.path.basename(input_file)
+    name, ext = os.path.splitext(base)
+
     if format:
-        new_path, _ = os.path.splitext(s)
-        if not format.startswith('.'):
-            format = "." + format
-        new_path += format
-        return new_path
-    return s
+        ext = format if format.startswith('.') else f".{format}"
+
+    candidate = os.path.join(output_dir, name + ext)
+    counter = 1
+    while os.path.exists(candidate):
+        candidate = os.path.join(output_dir, f"{name}_{counter}{ext}")
+        counter += 1
+
+    return os.path.basename(candidate)
 
 def trim_video(options: list[str], format: str):
     if len(options) < 4:
@@ -43,7 +48,7 @@ def trim_video(options: list[str], format: str):
     duration = get_duration(options[1], options[2]) # Convert to duration because -t is more reliable than -to
     output_dir = options[3]
     os.makedirs(output_dir, exist_ok=True)
-    subprocess.run([ "ffmpeg", "-ss", start_time, "-t", duration, "-i", input_file, "-map_chapters", "-1", "-c", "copy", f"{output_dir}/{get_output_filename(input_file, format)}" ])
+    subprocess.run([ "ffmpeg", "-ss", start_time, "-t", duration, "-i", input_file, "-map_chapters", "-1", "-c", "copy", f"{output_dir}/{get_output_filename(input_file, format, output_dir)}" ])
 
 config_path = sys.argv[1]
 format = ""
