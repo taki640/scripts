@@ -8,6 +8,7 @@ parser.add_argument("--recursive", "-r", action = "store_true", help = "Compress
 parser.add_argument("--quality", "-q", type = int, default = 26, help = "Quality factor, from 0 to 51, lower is better, default is 26")
 parser.add_argument("--size", "-s", type = str, default = "", help = "New resolution 'width:height', e.g. '1280:720'")
 parser.add_argument("--cpu-enc", action = "store_true", help = "Use libx264 instead of h264_amf.")
+parser.add_argument("--ignore-stream", "-is", action="append", default=[], type=int, help="Don't encode the given streams")
 args = parser.parse_args()
 
 width = 25
@@ -31,10 +32,15 @@ def RunFFMPEG(input: str, output: str):
     if args.size:
         ffmpegArgs += ["-vf", f"scale={args.size}"]
     if args.cpu_enc:
-        ffmpegArgs += [ "-c:v", "libx264", "-crf", str(args.quality), ] 
+        ffmpegArgs += [ "-c:v", "libx264", "-crf", str(args.quality), ]
     else:
         ffmpegArgs += [ "-c:v", "h264_amf", "-rc", "cqp", "-qp_i", str(args.quality), "-qp_p", str(args.quality), "-qp_b", str(args.quality) ]
-    ffmpegArgs += ["-c:a", "aac", "-strict", "experimental", "-b:a", "128k", "-map", "0", "-c:s", "copy", output]
+
+    ffmpegArgs += ["-c:a", "aac", "-strict", "experimental", "-b:a", "128k", "-map", "0" ]
+    for stream in args.ignore_stream:
+        ffmpegArgs += ["-map", f"-0:{stream}"]
+    ffmpegArgs += [ "-c:s", "copy", output]
+
     print(f"Running: {ffmpegArgs}")
     subprocess.run(ffmpegArgs)
 
@@ -47,7 +53,7 @@ else:
     for path in IteratePath():
         if path.exists() and path.is_file() and path.suffix.lower() in allowedExtensions:
             files.append(path)
-    
+
     if len(files) == 0:
         print("No video files to compress")
 
