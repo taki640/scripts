@@ -13,7 +13,7 @@ if not playlist_file.endswith(".m3u"):
     playlist_file += ".m3u"
 
 if (Path(playlist_file).exists() and not args.overwrite):
-    print(f"ERROR: Playlist file {playlist_file} already exists, if you with to overwrite the existing file, use --overwrite/-ow")
+    print(f"ERROR: Playlist file {playlist_file} already exists, use --overwrite/-ow to overwrite the existing file")
     exit(1)
 
 print(f"> {playlist_file}")
