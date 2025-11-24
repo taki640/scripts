@@ -17,7 +17,7 @@ if (Path(playlist_file).exists() and not args.overwrite):
     exit(1)
 
 print(f"> {playlist_file}")
-with open(playlist_file, 'w') as file:
+with open(playlist_file, 'w', encoding="utf-8") as file:
     for path in sorted(Path(".").iterdir()):
         if path.suffix.lower() in allowed_extensions:
             p = path.absolute() if args.absolute else path
