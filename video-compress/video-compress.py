@@ -36,7 +36,7 @@ def RunFFMPEG(input: str, output: str):
     else:
         ffmpegArgs += [ "-c:v", "h264_amf", "-rc", "cqp", "-qp_i", str(args.quality), "-qp_p", str(args.quality), "-qp_b", str(args.quality) ]
 
-    ffmpegArgs += ["-c:a", "aac", "-strict", "experimental", "-b:a", "128k", "-map", "0" ]
+    ffmpegArgs += ["-c:a", "copy", "-map", "0" ]
     for stream in args.ignore_stream:
         ffmpegArgs += ["-map", f"-0:{stream}"]
     ffmpegArgs += [ "-c:s", "copy", output]
