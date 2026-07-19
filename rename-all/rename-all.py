@@ -1,4 +1,6 @@
 import argparse
+import os
+import stat
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
@@ -18,7 +20,14 @@ if len(args.replace) > 0:
         print("ERROR: --replace/-r argument has an invalid value, the correct format is: '<old>:<new>'")
         exit(1)
 
-for path in Path(".").rglob("*"):
+SKIP = stat.FILE_ATTRIBUTE_SYSTEM | stat.FILE_ATTRIBUTE_HIDDEN
+
+for path in Path(".").iterdir():
+    if not path.is_file():
+        continue
+    if os.stat(path).st_file_attributes & SKIP:
+        continue
+
     new_path = f"{path}"
     if len(replace) > 0:
         new_path = new_path.replace(replace[0], replace[1])
