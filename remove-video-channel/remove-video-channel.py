@@ -17,7 +17,6 @@ Path("output").mkdir(exist_ok = True)
 allowedExtensions = { ".mkv", ".mp4" }
 for path in Path(".").glob("*"):
     if path.exists() and path.is_file() and path.suffix.lower() in allowedExtensions:
-        ffmpegArgs = [ "ffmpeg", "-i", str(path), "-c", "copy", "-disposition:s:0", "default", f"output/{path.name}" ]
         mapArgs: list[str] = []
 
         if args.mode == "remove":
@@ -40,5 +39,5 @@ for path in Path(".").glob("*"):
             else:
                 mapArgs += ["-map", "0:s"] # Keep all subtitles if no channels are specified
 
-        ffmpegArgs[3:3] = mapArgs
+        ffmpegArgs = [ "ffmpeg", "-i", str(path), *mapArgs, "-c", "copy", "-disposition:s:0", "default", f"output/{path.name}" ]
         subprocess.run(ffmpegArgs)

@@ -8,6 +8,7 @@ parser.add_argument("--recursive", "-r", action = "store_true", help = "Compress
 parser.add_argument("--quality", "-q", type = int, default = 26, help = "Quality factor, from 0 to 51, lower is better, default is 26")
 parser.add_argument("--size", "-s", type = str, default = "", help = "New resolution 'width:height', e.g. '1280:720'")
 parser.add_argument("--cpu-enc", action = "store_true", help = "Use libx264 instead of h264_amf.")
+parser.add_argument("--hevc", action = "store_true", help = "Use libx264 instead of h264_amf.")
 parser.add_argument("--ignore-stream", "-is", action="append", default=[], type=int, help="Don't encode the given streams")
 args = parser.parse_args()
 
@@ -31,10 +32,17 @@ def RunFFMPEG(input: str, output: str):
     ffmpegArgs = ["ffmpeg", "-i", input]
     if args.size:
         ffmpegArgs += ["-vf", f"scale={args.size}"]
+
     if args.cpu_enc:
-        ffmpegArgs += [ "-c:v", "libx264", "-crf", str(args.quality), ]
+        if args.hevc:
+            ffmpegArgs += [ "-c:v", "libx265", "-crf", str(args.quality), ]
+        else:
+            ffmpegArgs += [ "-c:v", "libx264", "-crf", str(args.quality), ]
     else:
-        ffmpegArgs += [ "-c:v", "h264_amf", "-rc", "cqp", "-qp_i", str(args.quality), "-qp_p", str(args.quality), "-qp_b", str(args.quality) ]
+        if args.hevc:
+            ffmpegArgs += [ "-c:v", "hevc_amf", "-rc", "cqp", "-qp_i", str(args.quality), "-qp_p", str(args.quality), "-qp_b", str(args.quality) ]
+        else:
+            ffmpegArgs += [ "-c:v", "h264_amf", "-rc", "cqp", "-qp_i", str(args.quality), "-qp_p", str(args.quality), "-qp_b", str(args.quality) ]
 
     ffmpegArgs += ["-c:a", "copy", "-map", "0" ]
     for stream in args.ignore_stream:
